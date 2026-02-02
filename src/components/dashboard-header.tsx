@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import React from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -74,7 +75,12 @@ export function DashboardHeader({ breadcrumbs }: { breadcrumbs: string[] }) {
                   <BreadcrumbPage>{crumb}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link href={`/${breadcrumbs.slice(0, index + 1).join('/')}`}>
+                    <Link
+                      href={`/${breadcrumbs
+                        .slice(0, index + 1)
+                        .join('/')
+                        .toLowerCase()}`}
+                    >
                       {crumb}
                     </Link>
                   </BreadcrumbLink>
