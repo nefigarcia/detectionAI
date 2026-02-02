@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { getAiInsights } from '@/app/actions';
 import { DashboardHeader } from '@/components/dashboard-header';
 import {
@@ -31,9 +32,9 @@ function SubmitButton() {
 
 function AIInsightSection() {
   const initialState = { insights: '', error: '' };
-  const [state, formAction] = useFormState(
-    // @ts-ignore
-    () => getAiInsights(defectMetrics),
+  const getAiInsightsWithData = getAiInsights.bind(null, defectMetrics);
+  const [state, formAction] = useActionState(
+    getAiInsightsWithData,
     initialState
   );
 
@@ -57,9 +58,7 @@ function AIInsightSection() {
             }}
           />
         )}
-        {state.error && (
-          <p className="text-destructive">{state.error}</p>
-        )}
+        {state.error && <p className="text-destructive">{state.error}</p>}
         {!state.insights && !state.error && (
           <p className="text-muted-foreground">
             Analysis results will appear here.
