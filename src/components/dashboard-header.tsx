@@ -35,6 +35,15 @@ const navLinks = [
   { href: '/dashboard/predict', label: 'Predict' },
 ];
 
+const breadcrumbLinkMap: { [key: string]: string } = {
+  Dashboard: '/dashboard',
+  Analytics: '/dashboard',
+  'Live Feed': '/dashboard/live',
+  'Image Management': '/dashboard/images',
+  Training: '/dashboard/training',
+  Predict: '/dashboard/predict',
+};
+
 export function DashboardHeader({ breadcrumbs }: { breadcrumbs: string[] }) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -75,12 +84,7 @@ export function DashboardHeader({ breadcrumbs }: { breadcrumbs: string[] }) {
                   <BreadcrumbPage>{crumb}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link
-                      href={`/${breadcrumbs
-                        .slice(0, index + 1)
-                        .join('/')
-                        .toLowerCase()}`}
-                    >
+                    <Link href={breadcrumbLinkMap[crumb] ?? '/dashboard'}>
                       {crumb}
                     </Link>
                   </BreadcrumbLink>
