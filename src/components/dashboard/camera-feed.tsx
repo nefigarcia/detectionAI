@@ -29,18 +29,48 @@ export function CameraFeed() {
       // First, clean up any existing streams to prevent issues.
       cleanup();
 
+      // Small helper to normalize getUserMedia across browsers.
+      const getUserMedia = (constraints: MediaStreamConstraints) => {
+        if (typeof navigator === 'undefined') {
+          return Promise.reject(new Error('Navigator is not available'));
+        }
+
+        // Modern API
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+          return navigator.mediaDevices.getUserMedia(constraints);
+        }
+
+        // Legacy callbacks (older browsers / WebKit)
+        const legacyGetUserMedia = (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia || (navigator as any).mozGetUserMedia;
+        if (legacyGetUserMedia) {
+          return new Promise<MediaStream>((resolve, reject) => {
+            try {
+              legacyGetUserMedia.call(navigator, constraints, resolve, reject);
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+
+        return Promise.reject(new Error('getUserMedia is not supported in this browser'));
+      };
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await getUserMedia({ video: true });
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-      } catch (err) {
-        console.error("Error accessing camera:", err);
+      } catch (err: any) {
+        console.error('Error accessing camera:', err);
+        const message = err?.name === 'NotAllowedError' || err?.message?.toLowerCase().includes('permission')
+          ? 'Camera permission denied. Please allow camera access in your browser.'
+          : (err?.message || 'Could not access the camera.');
+
         toast({
-          variant: "destructive",
-          title: "Camera Error",
-          description: "Could not access the camera. Please check permissions.",
+          variant: 'destructive',
+          title: 'Camera Error',
+          description: message,
         });
         setIsCameraOn(false); // Turn the toggle back off if we fail
       }
