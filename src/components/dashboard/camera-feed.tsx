@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Camera, CameraOff, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Badge } from '../ui/badge';
 
 type Detection = {
@@ -19,33 +20,45 @@ export function CameraFeed() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [detection, setDetection] = useState<Detection | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  const handleToggleCamera = () => {
-    setIsCameraOn((prev) => !prev);
-  };
+  const { toast } = useToast();
 
   useEffect(() => {
+    // This effect handles the camera stream lifecycle.
     const enableCamera = async () => {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' },
-          });
-          streamRef.current = stream;
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-          setError(null);
-        } catch (err) {
-          console.error('Error accessing camera:', err);
-          setError('Could not access the camera. Please check permissions.');
-          setIsCameraOn(false);
-        }
-      } else {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError('Camera not supported by this browser.');
+        setHasPermission(false);
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+        });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setError(null);
+        setHasPermission(true);
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+        let message = 'Could not access the camera.';
+        if (err instanceof Error && err.name === 'NotAllowedError') {
+          message =
+            'Camera access was denied. Please check your browser permissions.';
+        }
+        setError(message);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Error',
+          description: message,
+        });
+        setHasPermission(false);
+        setIsCameraOn(false);
       }
     };
 
@@ -66,16 +79,17 @@ export function CameraFeed() {
       disableCamera();
     }
 
+    // The cleanup function is crucial. It will run when the component unmounts
+    // OR when isCameraOn changes from true to false.
     return () => {
       disableCamera();
     };
-  }, [isCameraOn]);
-
+  }, [isCameraOn, toast]);
 
   useEffect(() => {
     let detectionInterval: NodeJS.Timeout;
 
-    if (isCameraOn && streamRef.current) {
+    if (isCameraOn && hasPermission) {
       detectionInterval = setInterval(() => {
         // Simulate a detection
         if (Math.random() > 0.6) {
@@ -96,7 +110,7 @@ export function CameraFeed() {
     return () => {
       if (detectionInterval) clearInterval(detectionInterval);
     };
-  }, [isCameraOn]);
+  }, [isCameraOn, hasPermission]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -110,8 +124,8 @@ export function CameraFeed() {
 
       const render = () => {
         if (video.videoWidth > 0) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -145,6 +159,10 @@ export function CameraFeed() {
     }
   }, [detection, isCameraOn]);
 
+  const handleToggleCamera = () => {
+    setIsCameraOn((prev) => !prev);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -174,7 +192,7 @@ export function CameraFeed() {
               {error ? (
                 <>
                   <AlertCircle className="h-12 w-12 text-destructive" />
-                  <p className="mt-4 text-center text-destructive-foreground">
+                  <p className="mt-4 max-w-xs text-center text-sm font-medium">
                     {error}
                   </p>
                 </>
@@ -189,13 +207,15 @@ export function CameraFeed() {
         </div>
         <div className="mt-4 flex items-center justify-between rounded-lg bg-secondary p-3">
           <span className="font-medium">Status:</span>
-            {detection ? (
-                <Badge variant="destructive" className="animate-pulse">
-                Defect Detected
-                </Badge>
-            ) : (
-                <Badge variant="secondary">{isCameraOn ? 'Monitoring' : 'Idle'}</Badge>
-            )}
+          {detection ? (
+            <Badge variant="destructive" className="animate-pulse">
+              Defect Detected
+            </Badge>
+          ) : (
+            <Badge variant="secondary">
+              {isCameraOn ? 'Monitoring' : 'Idle'}
+            </Badge>
+          )}
         </div>
       </CardContent>
     </Card>
