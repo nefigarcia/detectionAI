@@ -1,3 +1,6 @@
+'use client';
+
+import { useFormState, useFormStatus } from 'react-dom';
 import { getAiInsights } from '@/app/actions';
 import { DashboardHeader } from '@/components/dashboard-header';
 import {
@@ -13,14 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { defectMetrics } from '@/lib/data';
 import { AlertTriangle, Bot, CheckCircle2, Sigma } from 'lucide-react';
-
-// This is a server component, but we're creating a client component inside it to handle the form state
-'use client';
-
-import { useFormState, useFormStatus } from 'react-dom';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
