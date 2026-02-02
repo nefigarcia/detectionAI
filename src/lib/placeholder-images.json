@@ -1,3 +1,82 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "Abstract background representing technology and manufacturing.",
+      "imageUrl": "https://images.unsplash.com/photo-1717386255785-59c670564341?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmYWN0b3J5JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3NzAwMDQyNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "factory production"
+    },
+    {
+      "id": "sample-defect-1",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1613061068853-23294736925d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtZXRhbCUyMHNjcmF0Y2h8ZW58MHx8fHwxNzcwMDA0MjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "metal scratch"
+    },
+    {
+      "id": "sample-defect-2",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1596902362438-e8516a972fb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGxhc3RpYyUyMGNyYWNrfGVufDB8fHx8MTc3MDAwNDI0OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "plastic crack"
+    },
+    {
+      "id": "sample-defect-3",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1766505200510-8035e4140614?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmYWJyaWMlMjB0ZWFyfGVufDB8fHx8MTc3MDAwNDI0OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fabric tear"
+    },
+    {
+      "id": "sample-defect-4",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1680538993934-f81adb9e7828?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx3b29kJTIwZGVudHxlbnwwfHx8fDE3NzAwMDQyNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wood dent"
+    },
+    {
+      "id": "sample-defect-5",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1660380306537-faff29332a36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxnbGFzcyUyMGJ1YmJsZXxlbnwwfHx8fDE3NzAwMDQyNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "glass bubble"
+    },
+    {
+      "id": "sample-defect-6",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1571664933256-598962766f4c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwYWludCUyMGNoaXB8ZW58MHx8fHwxNzcwMDA0MjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "paint chip"
+    },
+    {
+      "id": "sample-defect-7",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1697952431907-8542919a16b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaXJjdWl0JTIwYm9hcmR8ZW58MHx8fHwxNzY5OTQ1MDE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "circuit board"
+    },
+    {
+      "id": "sample-defect-8",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1618215808538-d704e90333b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8d2VsZGluZyUyMGZsYXd8ZW58MHx8fHwxNzcwMDA0MjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "welding flaw"
+    },
+    {
+      "id": "sample-defect-9",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1673168871206-6195d19ac1d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZXh0aWxlJTIwbWlzcHJpbnR8ZW58MHx8fHwxNzcwMDA0MjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "textile misprint"
+    },
+    {
+      "id": "sample-defect-10",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1676911384426-743732d26116?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxib3R0bGUlMjBjYXB8ZW58MHx8fHwxNzcwMDA0MjQ5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bottle cap"
+    },
+    {
+      "id": "sample-defect-11",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1710774723552-7edea7c41d7c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0aXJlJTIwc2lkZXdhbGx8ZW58MHx8fHwxNzY5OTM5MDEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tire sidewall"
+    },
+    {
+      "id": "sample-defect-12",
+      "description": "Sample image with a manufacturing defect.",
+      "imageUrl": "https://images.unsplash.com/photo-1589010588553-46e8e7c21788?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmb29kJTIwcGFja2FnaW5nfGVufDB8fHx8MTc3MDAwNDI0OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "food packaging"
+    }
+  ]
 }
