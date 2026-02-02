@@ -21,42 +21,61 @@ export function CameraFeed() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detection, setDetection] = useState<Detection | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const startCamera = async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+  const handleToggleCamera = () => {
+    setIsCameraOn((prev) => !prev);
+  };
+
+  useEffect(() => {
+    const enableCamera = async () => {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
+          });
+          streamRef.current = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+          setError(null);
+        } catch (err) {
+          console.error('Error accessing camera:', err);
+          setError('Could not access the camera. Please check permissions.');
+          setIsCameraOn(false);
         }
-        setIsCameraOn(true);
-        setError(null);
-      } catch (err) {
-        console.error('Error accessing camera:', err);
-        setError('Could not access the camera. Please check permissions.');
-        setIsCameraOn(false);
+      } else {
+        setError('Camera not supported by this browser.');
       }
-    } else {
-      setError('Camera not supported by this browser.');
-    }
-  };
+    };
 
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+    const disableCamera = () => {
+      setDetection(null);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+
+    if (isCameraOn) {
+      enableCamera();
+    } else {
+      disableCamera();
     }
-    setIsCameraOn(false);
-    setDetection(null);
-  };
+
+    return () => {
+      disableCamera();
+    };
+  }, [isCameraOn]);
+
 
   useEffect(() => {
     let detectionInterval: NodeJS.Timeout;
 
-    if (isCameraOn) {
+    if (isCameraOn && streamRef.current) {
       detectionInterval = setInterval(() => {
         // Simulate a detection
         if (Math.random() > 0.6) {
@@ -76,9 +95,7 @@ export function CameraFeed() {
 
     return () => {
       if (detectionInterval) clearInterval(detectionInterval);
-      stopCamera();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCameraOn]);
 
   useEffect(() => {
@@ -92,8 +109,10 @@ export function CameraFeed() {
       let animationFrameId: number;
 
       const render = () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        if (video.videoWidth > 0) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (detection) {
@@ -130,7 +149,7 @@ export function CameraFeed() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline">Live Defect Detection</CardTitle>
-        <Button onClick={isCameraOn ? stopCamera : startCamera} size="sm">
+        <Button onClick={handleToggleCamera} size="sm">
           {isCameraOn ? (
             <CameraOff className="mr-2 h-4 w-4" />
           ) : (
@@ -170,13 +189,13 @@ export function CameraFeed() {
         </div>
         <div className="mt-4 flex items-center justify-between rounded-lg bg-secondary p-3">
           <span className="font-medium">Status:</span>
-          {detection ? (
-            <Badge variant="destructive" className="animate-pulse">
-              Defect Detected
-            </Badge>
-          ) : (
-            <Badge variant="secondary">Monitoring</Badge>
-          )}
+            {detection ? (
+                <Badge variant="destructive" className="animate-pulse">
+                Defect Detected
+                </Badge>
+            ) : (
+                <Badge variant="secondary">{isCameraOn ? 'Monitoring' : 'Idle'}</Badge>
+            )}
         </div>
       </CardContent>
     </Card>
