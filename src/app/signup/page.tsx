@@ -14,12 +14,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShieldCheck } from 'lucide-react';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // In a real app, you'd have authentication logic here.
+    // In a real app, you'd have signup logic here.
     // For this prototype, we'll just redirect to the dashboard.
     router.push('/dashboard');
   };
@@ -31,13 +31,19 @@ export default function LoginPage() {
           <div className="mb-4 flex justify-center">
             <ShieldCheck className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="font-headline text-2xl">
+            Create an Account
+          </CardTitle>
           <CardDescription>
-            Enter your credentials to access your dashboard.
+            Start your free trial by entering your details below.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" type="text" placeholder="Your Name" required />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -52,13 +58,13 @@ export default function LoginPage() {
               <Input id="password" type="password" required />
             </div>
             <Button type="submit" className="w-full">
-              Sign In
+              Sign Up & Start Trial
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
-            <Link href="/signup" className="underline">
-              Sign Up
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Sign In
             </Link>
           </div>
         </CardContent>
