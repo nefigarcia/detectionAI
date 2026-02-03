@@ -1,4 +1,8 @@
+'use client';
+
 import Image from 'next/image';
+import { useState, type ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,11 +13,81 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { managedImages } from '@/lib/data';
 import { Download, PlusCircle, Tag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function ImageManagementPage() {
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast({
+        variant: 'destructive',
+        title: 'No file selected',
+        description: 'Please select an image file to upload.',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('projectId', '1'); // Hardcoding project ID for now
+
+    try {
+      const response = await fetch('/api/images/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      toast({
+        title: 'Upload successful',
+        description: `${file.name} has been uploaded.`,
+      });
+      setOpen(false);
+      setFile(null);
+      router.refresh(); // Refresh page to show the new image (once dynamic data is wired)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: message,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+
   return (
     <>
       <DashboardHeader breadcrumbs={['Dashboard', 'Image Management']} />
@@ -32,10 +106,51 @@ export default function ImageManagementPage() {
               <Tag className="mr-2 h-4 w-4" />
               Label in Roboflow
             </Button>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Upload Images
-            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Upload Images
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Upload Image</DialogTitle>
+                  <DialogDescription>
+                    Select an image file to upload to your project.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label htmlFor="image">Image</Label>
+                    <Input id="image" type="file" onChange={handleFileChange} accept="image/*" />
+                  </div>
+                   {file && (
+                    <div className="mt-4 flex items-center gap-4 rounded-md border p-2">
+                        <Image
+                            src={URL.createObjectURL(file)}
+                            alt="Preview"
+                            width={64}
+                            height={64}
+                            className="aspect-square rounded-md object-cover"
+                        />
+                        <div className="text-sm">
+                            <p className="font-medium">{file.name}</p>
+                            <p className="text-muted-foreground">{(file.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button
+                    onClick={handleUpload}
+                    disabled={isUploading || !file}
+                  >
+                    {isUploading ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 

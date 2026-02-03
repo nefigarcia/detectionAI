@@ -122,7 +122,7 @@ export default function LandingPage() {
             <Link href="#pricing">
               <Button variant="ghost">Pricing</Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/login">
               <Button>Get Started</Button>
             </Link>
           </nav>
@@ -152,7 +152,7 @@ export default function LandingPage() {
               your bottom line.
             </p>
             <div className="mt-6">
-              <Link href="/dashboard">
+              <Link href="/login">
                 <Button size="lg">Start Your Free Trial</Button>
               </Link>
             </div>
