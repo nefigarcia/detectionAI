@@ -1,5 +1,6 @@
-'use client';
+ 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -16,12 +17,33 @@ import { ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // In a real app, you'd have authentication logic here.
-    // For this prototype, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || 'Signin failed');
+        setLoading(false);
+        return;
+      }
+      // On success redirect to dashboard. Session/cookies not implemented yet.
+      router.push('/dashboard');
+    } catch (err) {
+      setError((err as Error).message || 'Signin failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,14 +67,17 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            {error && <div className="text-sm text-destructive">{error}</div>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

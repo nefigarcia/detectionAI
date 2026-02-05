@@ -1,5 +1,6 @@
-'use client';
+ 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -16,12 +17,34 @@ import { ShieldCheck } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // In a real app, you'd have signup logic here.
-    // For this prototype, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || 'Signup failed');
+        setLoading(false);
+        return;
+      }
+      // On success redirect to dashboard. Session/cookies not implemented yet.
+      router.push('/dashboard');
+    } catch (err) {
+      setError((err as Error).message || 'Signup failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,7 +65,7 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" type="text" placeholder="Your Name" required />
+              <Input id="name" type="text" placeholder="Your Name" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -51,14 +74,17 @@ export default function SignupPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full">
-              Sign Up & Start Trial
+            {error && <div className="text-sm text-destructive">{error}</div>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Creating account...' : 'Sign Up & Start Trial'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

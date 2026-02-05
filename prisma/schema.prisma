@@ -3,8 +3,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// For Prisma v5 we keep the DATABASE_URL inside schema.prisma so the CLI and
+// the generated client can find the datasource. It reads from your .env file.
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -59,6 +62,9 @@ model Image {
   project      Project   @relation(fields: [projectId], references: [id])
   projectId    Int
   originalUrl  String    // S3/Storage URL
+  filename     String?   // original filename
+  size         Int?      // size in bytes
+  mimetype     String?   // MIME type
   annotatedUrl String?   // S3 URL of image with boxes
   uploadedBy   Int?      // optional user id
   detections   Detection[]
