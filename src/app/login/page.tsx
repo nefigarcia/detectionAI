@@ -38,7 +38,14 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      // On success redirect to dashboard. Session/cookies not implemented yet.
+      // On success store a lightweight client auth flag and redirect to dashboard.
+      try {
+        if (data?.user) {
+          localStorage.setItem('authUser', JSON.stringify(data.user));
+        }
+      } catch (e) {
+        // ignore localStorage errors
+      }
       router.push('/dashboard');
     } catch (err) {
       setError((err as Error).message || 'Signin failed');

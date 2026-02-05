@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import Image from 'next/image';
-import { useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { managedImages } from '@/lib/data';
+import { useDataProvider } from '@/lib/dataProviderContext';
+import type { ImageSummary } from '@/lib/dataProviders';
+import type { ManagedImage } from '@/lib/types';
 import { Download, PlusCircle, Tag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -74,7 +77,8 @@ export default function ImageManagementPage() {
       });
       setOpen(false);
       setFile(null);
-      router.refresh(); // Refresh page to show the new image (once dynamic data is wired)
+      // Refresh images list from provider so newly uploaded image appears
+      await fetchImages();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
       toast({
@@ -86,6 +90,24 @@ export default function ImageManagementPage() {
       setIsUploading(false);
     }
   };
+
+  const provider = useDataProvider();
+  const [images, setImages] = useState<(ImageSummary | ManagedImage)[] | null>(null);
+  const fetchImages = async () => {
+    try {
+      const imgs = await provider.getImages?.(1) ?? [];
+      setImages(imgs as ImageSummary[]);
+    } catch (err) {
+      console.error('Failed to fetch images', err);
+      setImages([]);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    fetchImages();
+    return () => { mounted = false; };
+  }, []);
 
 
   return (
@@ -155,15 +177,20 @@ export default function ImageManagementPage() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {managedImages.map((image) => (
+          {(images ?? managedImages).map((image) => {
+            const isApi = 'originalUrl' in image;
+            const src = isApi ? `/api/images/${image.id}/proxy` : (image as ManagedImage).url;
+            const title = isApi ? (image as ImageSummary).filename ?? 'Image' : (image as ManagedImage).name;
+            const uploadedAt = isApi ? (image as ImageSummary).createdAt : (image as ManagedImage).uploadedAt;
+            return (
             <Card key={image.id} className="group relative overflow-hidden">
               <CardHeader className="absolute left-2 top-2 z-10 p-0">
                 <Checkbox className="h-5 w-5 rounded-md border-2 border-white bg-black/20 shadow-lg" />
               </CardHeader>
               <CardContent className="p-0">
                 <Image
-                  src={image.url}
-                  alt={image.name}
+                  src={src ?? ''}
+                  alt={title}
                   width={400}
                   height={300}
                   className="aspect-[4/3] w-full object-cover transition-transform group-hover:scale-105"
@@ -171,16 +198,17 @@ export default function ImageManagementPage() {
                 />
               </CardContent>
               <CardFooter className="flex flex-col items-start bg-secondary/50 p-3">
-                <p className="font-semibold">{image.name}</p>
+                <p className="font-semibold">{title}</p>
                 <p className="text-xs text-muted-foreground">
                   Uploaded{' '}
-                  {formatDistanceToNow(new Date(image.uploadedAt), {
+                  {formatDistanceToNow(new Date(uploadedAt), {
                     addSuffix: true,
                   })}
                 </p>
               </CardFooter>
             </Card>
-          ))}
+            );
+          })}
         </div>
         <div className="mt-8 flex justify-center">
             <Button variant="secondary">Load More</Button>

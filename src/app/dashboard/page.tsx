@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import React from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { getAiInsights } from '@/app/actions';
@@ -17,7 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { defectMetrics } from '@/lib/data';
+import { useDataProvider, DataProviderProvider } from '@/lib/dataProviderContext';
+import type { Defect, DefectTrend } from '@/lib/types';
 import { AlertTriangle, Bot, CheckCircle2, Sigma } from 'lucide-react';
 
 function SubmitButton() {
@@ -30,9 +32,9 @@ function SubmitButton() {
   );
 }
 
-function AIInsightSection() {
+function AIInsightSection({ metrics }: { metrics: Defect[] }) {
   const initialState = { insights: '', error: '' };
-  const getAiInsightsWithData = getAiInsights.bind(null, defectMetrics);
+  const getAiInsightsWithData = getAiInsights.bind(null, metrics);
   const [state, formAction] = useActionState(
     getAiInsightsWithData,
     initialState
@@ -75,11 +77,30 @@ function AIInsightSection() {
 }
 
 export default function AnalyticsPage() {
-  const totalDefects = defectMetrics.reduce((sum, item) => sum + item.count, 0);
+  return (
+    <DataProviderProvider>
+      <DashboardContent />
+    </DataProviderProvider>
+  );
+}
+
+function DashboardContent() {
+  const provider = useDataProvider();
+  const [metrics, setMetrics] = React.useState<Defect[] | null>(null);
+  const [trends, setTrends] = React.useState<DefectTrend[] | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    provider.getDefectMetrics().then((d) => { if (mounted) setMetrics(d); });
+    provider.getDefectTrends().then((t) => { if (mounted) setTrends(t); });
+    return () => { mounted = false; };
+  }, [provider]);
+
+  const totalDefects = (metrics ?? []).reduce((sum, item) => sum + item.count, 0);
 
   return (
     <>
-      <DashboardHeader breadcrumbs={['Dashboard', 'Analytics']} />
+      <DashboardHeader breadcrumbs={["Dashboard", "Analytics"]} />
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card>
@@ -120,7 +141,7 @@ export default function AnalyticsPage() {
             <CardContent>
               <div className="text-2xl font-bold">Scratch</div>
               <p className="text-xs text-muted-foreground">
-                {defectMetrics[0].count} instances this month
+                {metrics && metrics[0] ? metrics[0].count : '—'} instances this month
               </p>
             </CardContent>
           </Card>
@@ -141,12 +162,12 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-2">
-          <DefectTypesChart />
-          <DefectTrendChart />
+          <DefectTypesChart data={metrics ?? undefined} />
+          <DefectTrendChart data={trends ?? undefined} />
         </div>
 
         <div>
-          <AIInsightSection />
+          <AIInsightSection metrics={metrics ?? []} />
         </div>
       </main>
     </>

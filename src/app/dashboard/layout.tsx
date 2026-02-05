@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import React from 'react';
+import { DataProviderProvider } from '@/lib/dataProviderContext';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Analytics' },
@@ -58,7 +59,9 @@ export default function DashboardLayout({
         </nav>
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <main>{children}</main>
+        <DataProviderProvider>
+          <main>{children}</main>
+        </DataProviderProvider>
       </div>
     </div>
   );

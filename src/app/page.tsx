@@ -122,8 +122,8 @@ export default function LandingPage() {
             <Link href="#pricing">
               <Button variant="ghost">Pricing</Button>
             </Link>
-            <Link href="/signup">
-              <Button>Get Started</Button>
+            <Link href="/dashboard">
+              <Button>Demo Tenant</Button>
             </Link>
           </nav>
         </div>
