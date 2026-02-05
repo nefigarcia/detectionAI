@@ -42,6 +42,12 @@ export default function LoginPage() {
       try {
         if (data?.user) {
           localStorage.setItem('authUser', JSON.stringify(data.user));
+          // Clear demo mode when a real user signs in.
+          try {
+            localStorage.removeItem('demoMode');
+          } catch (e) {
+            // ignore
+          }
         }
       } catch (e) {
         // ignore localStorage errors

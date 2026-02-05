@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import DemoBadge from './demo-badge';
 
 const navLinks = [
   { href: '/dashboard', label: 'Analytics' },
@@ -103,6 +104,7 @@ export function DashboardHeader({ breadcrumbs }: { breadcrumbs: string[] }) {
           className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
+      <DemoBadge />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

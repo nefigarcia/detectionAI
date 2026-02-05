@@ -1,5 +1,5 @@
 import { Defect, DefectTrend } from './types';
-import { defectMetrics, defectTrends } from '@/lib/data';
+import { defectMetrics, defectTrends, managedImages } from '@/lib/data';
 
 export type ProjectSummary = {
   id: number;
@@ -34,10 +34,26 @@ export const MockProvider: DashboardDataProvider = {
     return JSON.parse(JSON.stringify(defectTrends)) as DefectTrend[];
   },
   async getProjects() {
-    return [];
+    return [
+      {
+        id: 1,
+        name: 'Demo Project',
+        description: 'Sample project for the demo tenant',
+      },
+    ];
   },
-  async getImages() {
-    return [];
+  async getImages(projectId?: number) {
+    // Map managedImages to the ImageSummary shape expected by the UI.
+    return managedImages.map((img, idx) => ({
+      id: idx + 1,
+      projectId: projectId ?? 1,
+      originalUrl: img.url,
+      filename: img.name,
+      size: null,
+      mimetype: null,
+      uploadedBy: null,
+      createdAt: img.uploadedAt,
+    }));
   },
 };
 

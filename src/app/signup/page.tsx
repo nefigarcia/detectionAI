@@ -43,6 +43,12 @@ export default function SignupPage() {
       try {
         if (data?.user) {
           localStorage.setItem('authUser', JSON.stringify(data.user));
+          // If demo mode was enabled previously, clear it when a real user signs up.
+          try {
+            localStorage.removeItem('demoMode');
+          } catch (e) {
+            // ignore
+          }
         }
       } catch (e) {
         // ignore localStorage errors

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DemoTenantButton from '@/components/demo-tenant-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -122,9 +123,7 @@ export default function LandingPage() {
             <Link href="#pricing">
               <Button variant="ghost">Pricing</Button>
             </Link>
-            <Link href="/dashboard">
-              <Button>Demo Tenant</Button>
-            </Link>
+            <DemoTenantButton />
           </nav>
         </div>
       </header>

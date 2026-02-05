@@ -95,6 +95,19 @@ export default function ImageManagementPage() {
   const [images, setImages] = useState<(ImageSummary | ManagedImage)[] | null>(null);
   const fetchImages = async () => {
     try {
+      // Honor explicit demo mode (query param or localStorage) to avoid timing issues
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const demoQuery = params.get('demo');
+        const demoStored = localStorage.getItem('demoMode');
+        if (demoQuery === '1' || demoStored) {
+          setImages(managedImages as ManagedImage[]);
+          return;
+        }
+      } catch (e) {
+        // ignore parsing errors and continue to provider
+      }
+
       const imgs = await provider.getImages?.(1) ?? [];
       setImages(imgs as ImageSummary[]);
     } catch (err) {
@@ -105,9 +118,10 @@ export default function ImageManagementPage() {
 
   useEffect(() => {
     let mounted = true;
+    // whenever the provider changes (mock <-> api), re-fetch images
     fetchImages();
     return () => { mounted = false; };
-  }, []);
+  }, [provider]);
 
 
   return (
