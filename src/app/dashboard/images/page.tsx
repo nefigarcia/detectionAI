@@ -95,6 +95,9 @@ export default function ImageManagementPage() {
   const provider = useDataProvider();
   const [images, setImages] = useState<(ImageSummary | ManagedImage)[] | null>(null);
   const [labeledIds, setLabeledIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSavingDataset, setIsSavingDataset] = useState(false);
+  const [datasetSaved, setDatasetSaved] = useState(false);
   const fetchImages = async () => {
     try {
       // Honor explicit demo mode (query param or localStorage) to avoid timing issues
@@ -217,7 +220,17 @@ export default function ImageManagementPage() {
             return (
             <Card key={image.id} className="group relative overflow-hidden">
               <CardHeader className="absolute left-2 top-2 z-10 p-0 flex items-center gap-2">
-                <Checkbox className="h-5 w-5 rounded-md border-2 border-white bg-black/20 shadow-lg" />
+                <Checkbox
+                  className="h-5 w-5 rounded-md border-2 border-white bg-black/20 shadow-lg"
+                  checked={selectedIds.has(id)}
+                  onCheckedChange={(v) => {
+                    setSelectedIds((prev) => {
+                      const s = new Set(prev);
+                      if (v) s.add(id); else s.delete(id);
+                      return s;
+                    });
+                  }}
+                />
                 {isLabeled && (
                   <div className="ml-2 rounded-md bg-emerald-600 px-2 py-1 text-xs font-semibold text-emerald-100">Labeled</div>
                 )}
@@ -251,10 +264,62 @@ export default function ImageManagementPage() {
 
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2">
             <Card className="flex items-center gap-4 p-3 shadow-2xl">
-                <p className="text-sm font-medium">3 images selected</p>
-                <Button size="sm">
+                <p className="text-sm font-medium">{selectedIds.size} images selected</p>
+                <Button
+                    size="sm"
+                    onClick={async () => {
+                      // gather annotations and image info, then call API to export YOLO dataset
+                      if (selectedIds.size === 0) return;
+                      setIsSavingDataset(true);
+                      try {
+                        // collect image entries
+                        const selected = Array.from(selectedIds);
+                        const rawAnnotations = localStorage.getItem('labeledAnnotations') || '{}';
+                        const parsedAnnotations = JSON.parse(rawAnnotations || '{}');
+                        const payloadImages: any[] = [];
+                        for (const id of selected) {
+                          const img = (images ?? managedImages).find((i) => String(i.id) === id);
+                          if (!img) continue;
+                          const isApi = 'originalUrl' in img;
+                          const entry = parsedAnnotations[id];
+                          payloadImages.push({
+                            id,
+                            originalUrl: isApi ? (img as ImageSummary).originalUrl : (img as ManagedImage).url,
+                            filename: isApi ? ((img as ImageSummary).filename ?? `${id}.jpg`) : ((img as ManagedImage).name ?? `${id}.jpg`),
+                            width: entry?.width ?? null,
+                            height: entry?.height ?? null,
+                            annotations: entry?.boxes ?? [],
+                          });
+                        }
+
+                        const body = {
+                          projectId: 1, // TODO: make dynamic when multiple projects supported
+                          images: payloadImages,
+                        };
+
+                        const resp = await fetch('/api/datasets/export', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(body),
+                        });
+                        if (!resp.ok) {
+                          const err = await resp.json().catch(() => ({}));
+                          throw new Error(err?.error || 'Dataset export failed');
+                        }
+                        const data = await resp.json();
+                        setDatasetSaved(true);
+                        toast({ title: 'Dataset saved', description: `Saved dataset id=${data.dataset?.id}` });
+                      } catch (err) {
+                        const msg = err instanceof Error ? err.message : 'Export failed';
+                        toast({ variant: 'destructive', title: 'Export failed', description: msg });
+                      } finally {
+                        setIsSavingDataset(false);
+                      }
+                    }}
+                    disabled={selectedIds.size === 0 || isSavingDataset || datasetSaved}
+                >
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Create Dataset
+                    {datasetSaved ? 'Saved Dataset' : (isSavingDataset ? 'Saving...' : 'Save Dataset')}
                 </Button>
                 <Button size="sm" variant="outline">
                     <Download className="mr-2 h-4 w-4" />

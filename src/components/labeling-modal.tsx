@@ -31,7 +31,10 @@ export default function LabelingModal({
         const raw = localStorage.getItem('labeledAnnotations');
         if (!raw) return [];
         const parsed = JSON.parse(raw || '{}');
-        return parsed[String(imageId)] || [];
+        const entry = parsed[String(imageId)];
+        if (!entry) return [];
+        // entry may be stored as { boxes, width, height }
+        return entry.boxes || [];
       } catch (e) {
         return [];
       }
@@ -86,7 +89,14 @@ export default function LabelingModal({
     try {
       const raw = localStorage.getItem('labeledAnnotations') || '{}';
       const parsed = JSON.parse(raw);
-      parsed[String(imageId)] = boxes;
+      // store boxes along with the natural image dimensions so exports can
+      // correctly normalize coordinates to the original image size
+      const img = imgRef.current;
+      parsed[String(imageId)] = {
+        boxes,
+        width: img?.naturalWidth ?? img?.clientWidth ?? null,
+        height: img?.naturalHeight ?? img?.clientHeight ?? null,
+      };
       localStorage.setItem('labeledAnnotations', JSON.stringify(parsed));
       // mark labeled image
       const labeledRaw = localStorage.getItem('labeledImages') || '[]';
