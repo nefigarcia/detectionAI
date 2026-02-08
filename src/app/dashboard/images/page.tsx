@@ -5,6 +5,7 @@ import { useState, type ChangeEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Button } from '@/components/ui/button';
+import LabelingButton from '@/components/labeling-button';
 import {
   Card,
   CardContent,
@@ -93,6 +94,7 @@ export default function ImageManagementPage() {
 
   const provider = useDataProvider();
   const [images, setImages] = useState<(ImageSummary | ManagedImage)[] | null>(null);
+  const [labeledIds, setLabeledIds] = useState<Set<string>>(new Set());
   const fetchImages = async () => {
     try {
       // Honor explicit demo mode (query param or localStorage) to avoid timing issues
@@ -120,6 +122,23 @@ export default function ImageManagementPage() {
     let mounted = true;
     // whenever the provider changes (mock <-> api), re-fetch images
     fetchImages();
+    // load labeled ids from localStorage
+    try {
+      const raw = localStorage.getItem('labeledImages') || '[]';
+      setLabeledIds(new Set(JSON.parse(raw)));
+    } catch (e) {
+      setLabeledIds(new Set());
+    }
+    function onStorage(e: StorageEvent) {
+      if (e.key === 'labeledImages') {
+        try {
+          setLabeledIds(new Set(JSON.parse(e.newValue || '[]')));
+        } catch (err) {
+          setLabeledIds(new Set());
+        }
+      }
+    }
+    window.addEventListener('storage', onStorage);
     return () => { mounted = false; };
   }, [provider]);
 
@@ -138,10 +157,7 @@ export default function ImageManagementPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
-              <Tag className="mr-2 h-4 w-4" />
-              Label in Roboflow
-            </Button>
+              <LabelingButton />
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -193,13 +209,18 @@ export default function ImageManagementPage() {
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {(images ?? managedImages).map((image) => {
             const isApi = 'originalUrl' in image;
+            const id = String(image.id);
+            const isLabeled = labeledIds.has(id);
             const src = isApi ? `/api/images/${image.id}/proxy` : (image as ManagedImage).url;
             const title = isApi ? (image as ImageSummary).filename ?? 'Image' : (image as ManagedImage).name;
             const uploadedAt = isApi ? (image as ImageSummary).createdAt : (image as ManagedImage).uploadedAt;
             return (
             <Card key={image.id} className="group relative overflow-hidden">
-              <CardHeader className="absolute left-2 top-2 z-10 p-0">
+              <CardHeader className="absolute left-2 top-2 z-10 p-0 flex items-center gap-2">
                 <Checkbox className="h-5 w-5 rounded-md border-2 border-white bg-black/20 shadow-lg" />
+                {isLabeled && (
+                  <div className="ml-2 rounded-md bg-emerald-600 px-2 py-1 text-xs font-semibold text-emerald-100">Labeled</div>
+                )}
               </CardHeader>
               <CardContent className="p-0">
                 <Image
